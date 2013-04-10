@@ -34,7 +34,6 @@ from tornado import httputil
 from tornado import web
 from tornado import stack_context
 from tornado.escape import native_str
-from tornado.util import b
 
 import zmq
 from zmq.eventloop.zmqstream import ZMQStream
@@ -101,7 +100,7 @@ class ZMQHTTPRequest(httpserver.HTTPRequest):
         # Always create a copy as we use this multiple times.
         msg_list = []
         msg_list.extend(self.idents)
-        msg_list.extend([b'|',self.msg_id])
+        msg_list.extend(['|',self.msg_id])
         return msg_list
 
     def write(self, chunk, callback=None):
@@ -145,7 +144,7 @@ class ZMQStreamingHTTPRequest(ZMQHTTPRequest):
     def write(self, chunk, callback=None):
         # ZMQWEB NOTE: This method is overriden from the base class.
         msg_list = self._build_reply()
-        msg_list.extend([b'DATA', chunk])
+        msg_list.extend(['DATA', chunk])
         logging.debug('Sending write: %r', msg_list)
         self.stream.send_multipart(msg_list)
         # ZMQWEB NOTE: We don't want to permanently register an on_send callback
@@ -161,7 +160,7 @@ class ZMQStreamingHTTPRequest(ZMQHTTPRequest):
         # a call to self.connection.finish() and send the FINISH message.
         self._finish_time = time.time()
         msg_list = self._build_reply()
-        msg_list.append(b'FINISH')
+        msg_list.append('FINISH')
         logging.debug('Sending finish: %r', msg_list)
         self.stream.send_multipart(msg_list)
 
@@ -230,7 +229,7 @@ class ZMQApplication(web.Application):
         if len_msg_list < 4:
             raise IndexError('msg_list must have length 3 or more')
         # Use | as a delimeter between identities and the content.
-        i = msg_list.index(b'|')
+        i = msg_list.index('|')
         idents = msg_list[0:i]
         msg_id = msg_list[i+1]
         req = jsonapi.loads(msg_list[i+2])
